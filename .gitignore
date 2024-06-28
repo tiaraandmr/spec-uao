@@ -1,0 +1,6 @@
+# Don't keep track of data
+UAO-S118-23A
+
+# Don't keep track of these files
+.ipynb_checkpoints
+*.DS_Store
