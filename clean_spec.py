@@ -99,5 +99,3 @@ for i in range(len(day_1)):
         flux_err_2_resample = spec_errs_resample
         flux_total = (flux_1_ma_sky + flux_2_resample) / 2
         err_total = np.sqrt((flux_err_1**2 + flux_err_2_resample**2)/2)    
-
-        #print(name)
