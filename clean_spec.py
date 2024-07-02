@@ -183,11 +183,24 @@ for i in range(len(folder)):
     elif len(spectra) == 0:
         print('No Observation Data')
 
-#list filename 
-spectra = sorted(os.listdir(clean_spec))
-#for i in range(len(spectra)):
-#    IDs[i] = [(Path(spectra[i]).stem), dtype='int'] 
+#list filename fr
+spectra = glob.glob(clean_spec+'/*')
+IDs = np.array([Path(s).stem for s in spectra]).astype(int)
+table1 = Table.read('/Users/saraswati/Documents/Work/spec-uao/slits.fits')
+table2 = Table([IDs],names=("ID",))
+new_table = join(table1,table2) 
+new_table.write('/Users/saraswati/Documents/Work/spec-uao/slits_reduced.fits')
+#new_table.sort(['MAG_I'])
+#print(new_table['ID','MAG_I'])
 
-#arr_IDs = np.array(IDs)
-#print(IDs)
-#slits_reduced = join(Table.read('/Users/saraswati/Documents/Work/spec-uao/slits.fits'),Table([IDs],names=(IDs,)))
+#obj = Table.read(clean_spec+'/41241478567057924.fits')
+#good = np.invert(np.isnan(obj['FLUX']))
+#plt.figure(figsize=(17,5))
+#plt.rcParams.update({'font.size': 17})
+#plt.plot(obj['WAVELENGTH'], obj['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+#plt.xlim(obj['WAVELENGTH'][good].min(),obj['WAVELENGTH'][good].max())
+#plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
+#plt.ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]')
+#plt.title('41241478567057924')
+#plt.show()
+#plt.savefig(clean_spec+'41241478567057924.pdf', dpi=1000, bbox_inches="tight")
