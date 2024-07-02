@@ -1,10 +1,11 @@
 #!/usr/bin/python python3
 
-import os, subprocess as sub
+import os, glob, shutil, subprocess as sub
 from pathlib import Path
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
+from astropy.table import Table, join
 
 import matplotlib.pyplot as plt
 from matplotlib import rc
@@ -20,6 +21,10 @@ home = '/Users/saraswati/Documents/Work/spec-uao/UAO-S118-23A/'
 exclude = ["BD", "Feige"]
 folder = sorted((f for f in os.listdir(home) if not f.startswith(tuple(exclude))), key=str.lower)
 
+clean_spec = '/Users/saraswati/Documents/Work/spec-uao/clean_spec/'
+if os.path.exists(clean_spec):
+    shutil.rmtree(clean_spec)
+os.makedirs(clean_spec)
 
 for i in range(len(folder)):
     #list the folder inside home directory
@@ -27,15 +32,17 @@ for i in range(len(folder)):
     spectra = sorted(os.listdir(reduced))
     print(len(spectra))
 
+    #for folder with 2 days of observation data
     if len(spectra) == 2:
         #list the .FITS file for each observation day
-        prefixes = ["slitA001_1"]
+        prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
         day_1 = sorted((f for f in os.listdir(reduced+spectra[0]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
         day_2 = sorted((f for f in os.listdir(reduced+spectra[1]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
 
         #open .FITS file
         for i in range(len(day_1)):
-            print(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
+            #print(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
+
             hdul_1 = fits.open(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
             hdul_2 = fits.open(reduced+spectra[1]+'/obj_abs_1D/'+day_2[i])
 
@@ -49,6 +56,7 @@ for i in range(len(folder)):
 
             #object name and pixel properties
             name = header_1['OBJECT']
+            name_clean = name.rsplit('_', 1)[0]
             crval1 = header_1['CRVAL1']
             crval2 = header_2['CRVAL1']
             cdelt1 = header_1['CDELT1']
@@ -92,17 +100,32 @@ for i in range(len(folder)):
             #resample both spectra based on the new wavelength array
             flux_1_resample, flux_err_1_resample = spectres(new_wav, lam_1_ma_art, flux_1, spec_errs=flux_err_1, verbose=False)
             flux_2_resample, flux_err_2_resample = spectres(new_wav, lam_2_ma_art, flux_2, spec_errs=flux_err_2, verbose=False)
-            total_flux = flux_1_resample/(flux_err_1_resample) + flux_2_resample/(flux_err_2_resample) / (1/flux_err_1_resample**2 + 1/flux_err_2_resample**2)
-            total_flux_err = np.sqrt((flux_err_1_resample**2 + flux_err_2_resample**2)) 
+            new_wav_ma = ma.masked_inside(new_wav, 5570, 5585)
+            flux = flux_1_resample/(flux_err_1_resample) + flux_2_resample/(flux_err_2_resample) / (1/flux_err_1_resample**2 + 1/flux_err_2_resample**2)
+            flux_err = np.sqrt((flux_err_1_resample**2 + flux_err_2_resample**2)) 
+            
+            #save spectra into a DataFrame
+            spec_new = pd.DataFrame()
+            spec_new.insert(0, "WAVELENGTH", new_wav_ma)
+            spec_new.insert(1, "FLUX", flux)
+            spec_new.insert(2, "FLUX_ERR", flux_err)
+
+            #convert DataFrame into Table
+            spec_tab = Table.from_pandas(spec_new)
+
+            #save each spectrum into clean_spec directory
+            os.chdir(clean_spec)
+            spec_tab.write(name_clean+'.fits')
     
+    #for folder with 1 days of observation data
     elif len(spectra) == 1:
         #list the .FITS file for each observation day
-        prefixes = ["slitA001_1"]
+        prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
         day_1 = sorted((f for f in os.listdir(reduced+spectra[0]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
 
         #open .FITS file
         for i in range(len(day_1)):
-            print(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
+            #print(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
             hdul_1 = fits.open(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
 
             #.FITS data
@@ -113,6 +136,7 @@ for i in range(len(folder)):
 
             #object name and pixel properties
             name = header_1['OBJECT']
+            name_clean = name.rsplit('_', 1)[0]
             crval1 = header_1['CRVAL1']
             cdelt1 = header_1['CDELT1']
 
@@ -139,8 +163,31 @@ for i in range(len(folder)):
             #automatically set the x-limit for every spectra
             good_1 = np.invert(np.isnan(flux_1))
 
-            total_flux = flux_1
-            total_err = flux_err_1
+            flux = flux_1
+            flux_err = flux_err_1
+
+            #save spectra into a DataFrame
+            spec_new = pd.DataFrame()
+            spec_new.insert(0, "WAVELENGTH", lam_1_ma_art)
+            spec_new.insert(1, "FLUX", flux)
+            spec_new.insert(2, "FLUX_ERR", flux_err)
+
+            #convert DataFrame into Table
+            spec_tab = Table.from_pandas(spec_new)
+
+            #save each spectrum into clean_spec directory
+            os.chdir(clean_spec)
+            spec_tab.write(name_clean+'.fits')
     
+    #for folder with no observation data
     elif len(spectra) == 0:
         print('No Observation Data')
+
+#list filename 
+spectra = sorted(os.listdir(clean_spec))
+#for i in range(len(spectra)):
+#    IDs[i] = [(Path(spectra[i]).stem), dtype='int'] 
+
+#arr_IDs = np.array(IDs)
+#print(IDs)
+#slits_reduced = join(Table.read('/Users/saraswati/Documents/Work/spec-uao/slits.fits'),Table([IDs],names=(IDs,)))
