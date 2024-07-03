@@ -8,12 +8,7 @@ import pandas as pd
 from astropy.table import Table, join
 
 import matplotlib.pyplot as plt
-from matplotlib import rc
-rc('font',**{'family':'serif','serif':['lmodern']})
-rc('text', usetex=True)
-
 from spectres import spectres
-from specutils import Spectrum1D
 from astropy.io import fits
 
 #define path to the .FITS file
@@ -90,10 +85,6 @@ for i in range(len(folder)):
             lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
             lam_2_ma_art = ma.masked_inside(wav_2, 5570, 5585)
 
-            #automatically set the x-limit for every spectra
-            good_1 = np.invert(np.isnan(flux_1))
-            good_2 = np.invert(np.isnan(flux_2))
-
             #create a new wavelength array for both spectra
             new_wav = np.arange(-1, max(len(flux_1),len(flux_2)) + 1) * cdelt1 + (crval1 + crval2) / 2
 
@@ -160,9 +151,7 @@ for i in range(len(folder)):
             #masking the wavelength with calibration artifact
             lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
 
-            #automatically set the x-limit for every spectra
-            good_1 = np.invert(np.isnan(flux_1))
-
+            #final flux and flux_err
             flux = flux_1
             flux_err = flux_err_1
 
@@ -183,24 +172,12 @@ for i in range(len(folder)):
     elif len(spectra) == 0:
         print('No Observation Data')
 
-#list filename fr
+#list filename inside the clean_spec directory and assign an int type
 spectra = glob.glob(clean_spec+'/*')
 IDs = np.array([Path(s).stem for s in spectra]).astype(int)
+
+#join the new object list with the catalog list, then create a new table                 
 table1 = Table.read('/Users/saraswati/Documents/Work/spec-uao/slits.fits')
 table2 = Table([IDs],names=("ID",))
 new_table = join(table1,table2) 
-new_table.write('/Users/saraswati/Documents/Work/spec-uao/slits_reduced.fits')
-#new_table.sort(['MAG_I'])
-#print(new_table['ID','MAG_I'])
-
-#obj = Table.read(clean_spec+'/41241478567057924.fits')
-#good = np.invert(np.isnan(obj['FLUX']))
-#plt.figure(figsize=(17,5))
-#plt.rcParams.update({'font.size': 17})
-#plt.plot(obj['WAVELENGTH'], obj['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid')
-#plt.xlim(obj['WAVELENGTH'][good].min(),obj['WAVELENGTH'][good].max())
-#plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
-#plt.ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]')
-#plt.title('41241478567057924')
-#plt.show()
-#plt.savefig(clean_spec+'41241478567057924.pdf', dpi=1000, bbox_inches="tight")
+new_table.write('/Users/saraswati/Documents/Work/spec-uao/slits_reduced.fits', overwrite=True)
