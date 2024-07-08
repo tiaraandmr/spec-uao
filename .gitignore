@@ -1,5 +1,7 @@
 # Don't keep track of data
 UAO-S118-23A
+clean_spec
+plot_spec
 
 # Don't keep track of these files
 .ipynb_checkpoints
