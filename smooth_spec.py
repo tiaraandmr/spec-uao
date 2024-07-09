@@ -62,16 +62,16 @@ for i in range(len(object_ID)):
     #setting the x- and y-axis limit
     ax.set_xlim(wav[good].min(), wav[good].max())
     ax.set_ylim(flux.min(), 1.25*flux.max())
+
+    #plot a rest frame wavelength based on the best_z
+    ax2 = ax.secondary_xaxis('top',functions=(lambda lam: lam/(1+best_z), lambda lam: lam*(1+best_z))) 
+    ax2.set_xlabel(r'Rest Wavelength [$ \rm \AA$]', labelpad=10)
     
     #define x and y label and plot title
     ax.set_xlabel(r'Observed Wavelength [$ \rm \AA$]', labelpad=10)
     ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', labelpad=10)
     title = object_ID[i]
     ax.set_title(title+r', $z = {:.3f}$'.format(best_z), pad=20)
-
-    #plot a rest frame wavelength based on the best_z
-    ax2 = ax.secondary_xaxis('top',functions=(lambda lam: lam/(1+best_z), lambda lam: lam*(1+best_z))) 
-    ax2.set_xlabel(r'Rest Wavelength [$ \rm \AA$]', labelpad=10)
 
     #save the plot as .pdf
     plt.savefig(smooth_spec+title+'_smooth_n3.pdf', bbox_inches="tight")
