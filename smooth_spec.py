@@ -36,7 +36,7 @@ for i in range(len(object_ID)):
     flux = spec_data['FLUX']
     
     #smooth the spectra
-    N = 3
+    N = 5
     spec_convolve = convolve(flux, np.ones(N), boundary='extend', normalize_kernel=True)
     good = np.invert(np.isnan(flux))
 
@@ -51,17 +51,17 @@ for i in range(len(object_ID)):
     best_z = z[i]
 
     #check if lines are in the range of the observed spectrum
-    for i in range(len(species)):
-        data = species[i][1].astype('float64')
+    for j in range(len(species)):
+        data = species[j][1].astype('float64')
         x = data*(1+best_z)
 
         if ((x < wav[-1]) and (x > wav[0])):
             ax.vlines(x, ymin=flux.min(), ymax=flux.max(), color = 'black', ls = '--') 
-            ax.text(x, 1.1*flux.max(), species[i][0], rotation=90, fontsize=14, ha='center', va='center')
+            ax.text(x, 1.25*flux.max(), species[j][0], rotation=90, fontsize=14, ha='center', va='center')
 
     #setting the x- and y-axis limit
     ax.set_xlim(wav[good].min(), wav[good].max())
-    ax.set_ylim(flux.min(), 1.25*flux.max())
+    ax.set_ylim(flux.min(), 1.5*flux.max())
 
     #plot a rest frame wavelength based on the best_z
     ax2 = ax.secondary_xaxis('top',functions=(lambda lam: lam/(1+best_z), lambda lam: lam*(1+best_z))) 
