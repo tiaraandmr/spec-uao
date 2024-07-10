@@ -1,3 +1,5 @@
+#!/usr/bin/python python3
+
 import os, glob, shutil, subprocess as sub
 from pathlib import Path
 
@@ -74,5 +76,5 @@ for i in range(len(object_ID)):
     ax.set_title(title+r', $z = {:.3f}$'.format(best_z), pad=20)
 
     #save the plot as .pdf
-    plt.savefig(smooth_spec+title+'_smooth_n3.pdf', bbox_inches="tight")
+    plt.savefig(smooth_spec+title+'_smooth_n5.pdf', bbox_inches="tight")
     plt.close()
