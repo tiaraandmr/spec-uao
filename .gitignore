@@ -1,7 +1,7 @@
 # Don't keep track of data
 UAO-S118-23A
-clean_spec
-plot_spec
+#clean_spec
+#plot_spec
 smooth_spec
 
 # Don't keep track of these files
