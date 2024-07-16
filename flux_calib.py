@@ -1,73 +1,93 @@
 #!/usr/bin/python python3
 
-import os, glob, shutil, subprocess as sub
-from pathlib import Path
+# Import packages
 import numpy as np
-import numpy.ma as ma
-import pandas as pd
-from astropy.table import Table
-
-import matplotlib.pyplot as plt
-from spectres import spectres
-from astropy.io import fits
-import matplotlib.ticker as ticker
 from matplotlib import rc
-rc('font',**{'family':'serif','serif':['lmodern']})
+import matplotlib.pyplot as plt
+from astropy.table import Table
+from spectres import spectres
+from astropy.convolution import convolve
+
+# Set the font style to LaTeX
+rc('font', **{'family': 'serif', 'serif': ['lmodern']})
 rc('text', usetex=True)
 
+# Define home directory
 home = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/'
 
-feige_path = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/ffeige34.dat'
-feige = np.genfromtxt(feige_path)
+# Load the flux sampling template
+sampling_path = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/BD+33d2642_20230708_sampling.fits'
+sampling = Table.read(sampling_path)
 
-feige_path_obs = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/clean_calib/Feige34_B_clean.fits'
-feige_obs = Table.read(feige_path_obs)
+# Load the observed spectrum
+spec_obs_path = '/Users/saraswati/Documents/Work/spec-uao/clean_spec/41231853545355348.fits'
+spec_obs = Table.read(spec_obs_path)
 
-feige_path_orig = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/Feige34_B.fits'
-hdul = fits.open(feige_path_orig)
+# create a new wavelength array for both spectra
+new_wav = spec_obs['WAVELENGTH']
+flux = spec_obs['FLUX']
 
-#resample the template spectrum to the wavelength range of the observed spectrum
-cdelt1 = hdul[0].header['CDELT1']
-crval1 = hdul[0].header['CRVAL1']
+# resample the 'sampling' spectra based on the new wavelength array
+flux_sampling_resample = spectres(new_wav, sampling['WAVELENGTH'], sampling['FLUX'], verbose=False)
 
-flux_1 = hdul[0].data
+# Apply the flux sampling to the observed spectra
+flux_calibrated = spec_obs['FLUX'] * flux_sampling_resample
 
-#create a new wavelength array for both spectra
-new_wav = np.arange(-1, len(feige_obs['FLUX']) + 1) * cdelt1 + crval1
+# automatically set the x-limit for every spectra
+good = np.invert(np.isnan(flux_calibrated))
 
-#resample both spectra based on the new wavelength array
-flux_feige_resample, flux_err_feige_resample = spectres(new_wav, feige[:,0], feige[:,1]*10, spec_errs=feige[:,2], verbose=False)
-flux_obs_resample, flux_err_obs_resample = spectres(new_wav, feige_obs['WAVELENGTH'], feige_obs['FLUX'], spec_errs=feige_obs['FLUX_ERR'], verbose=False)
+#define line species
+species = np.array([['[SII]', 6716.435709204644], ['[SII]', 6730.811841618589], ['[NII]', 6583.451474377235], ['[NII]', 6548.050991532048], 
+                    ['[OIII]', 5006.843330296288], ['[OIII]', 4958.91106815638], ['[OIII]', 4363.2096874449635], ['[NeIII]', 3868.7632032493057], 
+                    ['[NeV]', 3425.8676240424247], ['[NeV]', 3345.828076914398], ['[OI]', 6300.303551730963], ['[OI]', 6363.776506749638], 
+                    ['[OII]', 3727.4199178007175], ['HI', 6562.797027356974], ['HI', 4861.321979760415], ['HI', 4340.459677187083], 
+                    ['CIV', 1548.8576020874154], ['HeII', 1639.7908206670402], ['CIII]', 1908.1020362243723], ['MgII', 2798.2921038031536]])
 
-#calculate the flux sampling
-sampling = flux_feige_resample / flux_obs_resample 
+slits = Table.read('/Users/saraswati/Documents/Work/spec-uao/slits_reduced.fits')
+object_ID = slits['ID'].astype('str')
+#z = slits['BEST_Z']
+z = 0.285
 
-#automatically set the x-limit for every spectra
-good = np.invert(np.isnan(sampling))
+#smooth the spectra
+N = 5
+spec_convolve = convolve(flux_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
+spec_convolve_orig = convolve(spec_obs['FLUX'], np.ones(N), boundary='extend', normalize_kernel=True)
 
 #define the figure and font size
-plt.rcParams.update({'font.size': 14})
-fig, axes = plt.subplots(3, figsize=(17,5), sharex=True, gridspec_kw={'height_ratios': [3,3,1.5]})
-fig.subplots_adjust(hspace=0, wspace=0)
+plt.rcParams.update({'font.size': 17})
+fig, ax = plt.subplots(figsize=(17,5))
 
 #plot the spectrum and set the x-limit
-axes[0].plot(new_wav, flux_feige_resample, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Template')
-#axes[0].plot(feige[:,0], feige[:,1], color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Template')
-axes[0].legend()
-axes[1].plot(new_wav, flux_obs_resample, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Observed', alpha=0.7)
-#axes[1].plot(feige_obs['WAVELENGTH'], feige_obs['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Observed')
-axes[1].legend()
-axes[2].plot(new_wav, sampling, color='black', linewidth=2.0, drawstyle='steps-mid')
-#axes[2].set_xlim(6500,9000)
-axes[2].set_xlim(new_wav[good].min(), new_wav[good].max())
-                
+ax.semilogy(new_wav, spec_convolve, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Calibrated \& Smoothed (N=5)', alpha=0.7)
+ax.semilogy(new_wav, spec_convolve_orig, color='steelblue', linewidth=2.0, drawstyle='steps-mid', label='Not Calibrated, Smoothed (N=5)', alpha=0.7)
+ax.legend(bbox_to_anchor=[0.48,0.3])
+    
+#define the approximate redshift (z)
+best_z = z
+
+#check if lines are in the range of the observed spectrum
+for j in range(len(species)):
+    data = species[j][1].astype('float64')
+    x = data*(1+best_z)
+
+    if ((x < new_wav[-1]) and (x > new_wav[0])):
+        ax.vlines(x, ymin=flux.min(), ymax=flux.max(), color = 'black', ls = '--') 
+        ax.text(x, 0.3*10*flux.max(), species[j][0], rotation=90, fontsize=14, ha='center', va='center')
+
+#setting the x- and y-axis limit
+ax.set_xlim(new_wav[good].min(), new_wav[good].max())
+ax.set_ylim(flux.min(), 100*flux.max())
+
+#plot a rest frame wavelength based on the best_z
+ax2 = ax.secondary_xaxis('top',functions=(lambda lam: lam/(1+best_z), lambda lam: lam*(1+best_z))) 
+ax2.set_xlabel(r'Rest Wavelength [$ \rm \AA$]', labelpad=10)
+    
 #define x and y label and plot title
-axes[2].set_xlabel(r'Observed Wavelength [$ \rm \AA$]')
-axes[0].set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]')
-axes[0].yaxis.set_label_coords(-0.06,-0.03)
-axes[2].set_ylabel(r'F($\lambda$)', labelpad=25)
-fig.suptitle('Feige 34')
+ax.set_xlabel(r'Observed Wavelength [$ \rm \AA$]', labelpad=10)
+ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', labelpad=10)
+title = '41231853545355348'
+ax.set_title(title+r', $z = {:.3f}$'.format(best_z), pad=20)
 
 #save the plot as .pdf
-fig.savefig(home+'Feige34.pdf', bbox_inches="tight")
-plt.close(fig)
+plt.savefig(home+title+'_calibrated_smooth_n5.pdf', bbox_inches="tight")
+plt.close()
