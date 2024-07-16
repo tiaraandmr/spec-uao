@@ -8,7 +8,8 @@ import pandas as pd
 from astropy.table import Table
 from spectres import spectres
 
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('font',**{'family':'serif','serif':['lmodern']})
@@ -17,7 +18,7 @@ rc('text', usetex=True)
 from astropy.io import fits
 
 day_1 = '/Users/saraswati/Documents/Work/spec-uao/UAO-S118-23A/Hviding2023A_1_734/reduced/2023.0412/obj_abs_1D/slitA002_41231978099401625t95686.fits'
-day_2 = '/Users/saraswati/Documents/Work/spec-uao/UAO-S118-23A/Hviding2023A_1_734/reduced/2023.0415/obj_abs_1D/slitA002_41231978099401625t95686.fits'
+day_2 = '/Users/saraswati/Documents/Work/spec-uao/UAO-S118-23A/Hviding2023A_1_734/reduced/2023.0415/obj_abs_1D/slitA004_41231978099407340t95688.fits'
 
 hdul_1 = fits.open(day_1)
 hdul_2 = fits.open(day_2)
@@ -56,8 +57,8 @@ wav_1 = crval1 + np.arange(len(flux_1)) * cdelt1
 wav_2 = crval1 + np.arange(len(flux_2)) * cdelt1
 
 #masking bad data and sky lines
-mask_flux_1 = np.logical_and(mask_1,sky_1)
-mask_flux_2 = np.logical_and(mask_2,sky_2)
+mask_flux_1 = np.logical_or(mask_1,sky_1 < -0.1)
+mask_flux_2 = np.logical_or(mask_2,sky_2 < -0.1)
 flux_1[mask_flux_1] = np.nan
 flux_2[mask_flux_2] = np.nan
 
@@ -83,7 +84,7 @@ fig, axes = plt.subplots(2, figsize=(17,5), sharex=True, gridspec_kw={'height_ra
 fig.subplots_adjust(hspace=0, wspace=0)
 
 #plot the spectrum and set the x-limit
-axes[0].plot(new_wav_ma, flux_1_resample, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Night 1 (N1)')
+#axes[0].plot(new_wav_ma, flux_1_resample, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Night 1 (N1)')
 axes[0].plot(new_wav_ma, flux_2_resample, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label = 'Night 2 (N2)', alpha=0.5)
 axes[0].plot(wav_2, sky_2, color='black', linewidth=2.0, drawstyle='steps-mid')
 axes[0].set_xlim(wav_1[good].min(), wav_1[good].max())
