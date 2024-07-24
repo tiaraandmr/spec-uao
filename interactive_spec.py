@@ -1,6 +1,7 @@
-#!/usr/bin/python python3
+#!/usr/bin/env python3
 
 # Import packages
+import os
 import numpy as np
 from astropy.table import Table
 from astropy.convolution import convolve
@@ -13,26 +14,20 @@ from matplotlib.widgets import TextBox
 from astropy.io import fits
 from spectres import spectres
 
-# Define home directory
-home = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/'
+import argparse
 
-# Load the flux sampling template
-sampling_path = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/BD+33d2642_20230708_sampling.fits'
-sampling = Table.read(sampling_path)
+parser = argparse.ArgumentParser()
+parser.add_argument('--id', default='41231836365464984')
+args = parser.parse_args()
+spec_id = args.id
 
 # Load the observed spectrum
-spec_obs_path = '/Users/saraswati/Documents/Work/spec-uao/clean_spec/41231853545355348.fits'
+spec_obs_path = f'/Users/saraswati/Documents/Work/spec-uao/clean_spec/{spec_id}.fits'
 spec_obs = Table.read(spec_obs_path)
 
 # Create a new wavelength array for both spectra
 new_wav = spec_obs['WAVELENGTH']
-flux = spec_obs['FLUX']
-
-# Resample the spectrum based on the new wavelength array
-flux_sampling_resample = spectres(new_wav, sampling['WAVELENGTH'], sampling['FLUX'], verbose=False)
-
-# Apply the flux sampling to the observed spectrum
-flux_calibrated = spec_obs['FLUX'] * flux_sampling_resample
+flux_calibrated = spec_obs['FLUX']
 
 # Automatically set the x-limit for every spectrum
 good = np.invert(np.isnan(flux_calibrated))
@@ -62,20 +57,21 @@ ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', lab
 
 #setting the x- and y-axis limit
 ax.set_xlim(new_wav[good].min(), new_wav[good].max())
-ax.set_ylim(flux.min(), 0.75*flux.max())
+ax.set_ylim(flux_calibrated.min(), 1.5*flux_calibrated.max())
 
 # Plot lines
-lines = [ax.vlines(line, flux.min(), 0.5*flux.max(), color = 'black', ls = '--')
+lines = [ax.vlines(line, flux_calibrated.min(), flux_calibrated.max(), color = 'black', ls = '--')
          for line in species[:, 1].astype('float64')]
 
 # Update function
 def submit(redshift):
+    global z
     z = float(redshift)
 
     # Update line positions
     for line_obj, line in zip(lines, species[:, 1].astype('float64')):
         line_obj.set_segments(
-            [[(line * (1 + z), flux.min()), (line * (1 + z), flux.max())]]
+            [[(line * (1 + z), flux_calibrated.min()), (line * (1 + z), 1.25*flux_calibrated.max())]]
         )
     
     ax.relim()
@@ -88,3 +84,24 @@ text_box.on_submit(submit)
 text_box.set_val('0.8')  # Trigger `submit` with the initial string.
 
 plt.show()
+
+#define path to redshift.txt
+redshift = '/Users/saraswati/Documents/Work/spec-uao/redshift.txt/'
+
+#write results to redshift.txt
+if os.path.exists('redshift.txt'):
+    id = np.genfromtxt('redshift.txt', usecols=0, dtype='unicode')
+    z_data = np.genfromtxt('redshift.txt', usecols=1, dtype='unicode')
+
+    if spec_id not in id:
+        with open('redshift.txt', 'a') as out:
+            out.write('\n'+ spec_id + '\t' + str(z))
+            print(str(z))
+    
+    else:
+        for i in range(len(z_data)):
+            if spec_id == id[i]:
+                z_data[i] = str(z)
+                print(z_data[i])
+    
+        np.savetxt('redshift.txt', np.transpose([id, z_data]) , fmt='%s', delimiter='\t')
