@@ -33,12 +33,6 @@ for i in range(len(folder)):
 
     if folder[i] == 'Hviding2023A_0_733':
 
-        #create folder for current observation
-        spec_1 = '/Users/saraswati/Documents/Work/spec-uao/calibrated_spec/Hviding2023A_0_733/'
-        if os.path.exists(spec_1):
-            shutil.rmtree(spec_1)
-        os.makedirs(spec_1)
-
         #list the .FITS file for each folder
         prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
         list_spec = sorted((f for f in os.listdir(reduced+spectra[0]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
@@ -81,16 +75,10 @@ for i in range(len(folder)):
             spec_tab = Table.from_pandas(spec_new)
 
             #save each spectrum into clean_spec directory
-            os.chdir(spec_1)
+            os.chdir(calibrated_spec)
             spec_tab.write(name_clean+'.fits')
 
     elif folder[i] == 'Hviding2023A_1_734':
-
-        #create folder for current observation
-        spec_2 = '/Users/saraswati/Documents/Work/spec-uao/calibrated_spec/Hviding2023A_1_734/'
-        if os.path.exists(spec_2):
-            shutil.rmtree(spec_2)
-        os.makedirs(spec_2)
 
         #list the .FITS file for each folder
         prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
@@ -134,16 +122,10 @@ for i in range(len(folder)):
             spec_tab = Table.from_pandas(spec_new)
 
             #save each spectrum into clean_spec directory
-            os.chdir(spec_2)
+            os.chdir(calibrated_spec)
             spec_tab.write(name_clean+'.fits')
 
     elif folder[i] == 'Hviding2023A_2_735':
-
-        #create folder for current observation
-        spec_3 = '/Users/saraswati/Documents/Work/spec-uao/calibrated_spec/Hviding2023A_2_735/'
-        if os.path.exists(spec_3):
-            shutil.rmtree(spec_3)
-        os.makedirs(spec_3)
 
         #list the .FITS file for each folder
         prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
@@ -187,16 +169,10 @@ for i in range(len(folder)):
             spec_tab = Table.from_pandas(spec_new)
 
             #save each spectrum into clean_spec directory
-            os.chdir(spec_3)
+            os.chdir(calibrated_spec)
             spec_tab.write(name_clean+'.fits')
 
     elif folder[i] == 'Hviding2023A_4_737':
-
-        #create folder for current observation
-        spec_4 = '/Users/saraswati/Documents/Work/spec-uao/calibrated_spec/Hviding2023A_4_737/'
-        if os.path.exists(spec_4):
-            shutil.rmtree(spec_4)
-        os.makedirs(spec_4)
 
         #list the .FITS file for each folder
         prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
@@ -240,5 +216,5 @@ for i in range(len(folder)):
             spec_tab = Table.from_pandas(spec_new)
 
             #save each spectrum into clean_spec directory
-            os.chdir(spec_4)
+            os.chdir(calibrated_spec)
             spec_tab.write(name_clean+'.fits')
