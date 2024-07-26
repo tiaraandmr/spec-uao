@@ -16,7 +16,7 @@ rc('text', usetex=True)
 
 #define path to the .FITS file
 home = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/'
-exclude = ["plot_calib", "clean_calib"]
+exclude = ["plot_calib", "clean_calib", "calib_dat"]
 calib = sorted((f for f in os.listdir(home) if not f.startswith(tuple(exclude))), key=str.lower)
 
 plot_calib = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/plot_calib/'
@@ -70,7 +70,7 @@ for i in range(len(calib)):
     spec_new = pd.DataFrame()
     spec_new.insert(0, "WAVELENGTH", lam_ma_art_2)
     spec_new.insert(1, "FLUX", flux)
-    spec_new.insert(2, "FLUX_ERR", flux_err)
+    spec_new.insert(2, "ERR", flux_err)
 
     #convert DataFrame into Table
     spec_tab = Table.from_pandas(spec_new)
