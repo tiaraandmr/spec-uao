@@ -78,8 +78,12 @@ for i in range(len(folder)):
             #masking bad data and sky lines
             mask_flux_1 = np.logical_or(mask_1,sky_1 < -0.1)
             mask_flux_2 = np.logical_or(mask_2,sky_2 < -0.1)
+
             flux_1[mask_flux_1] = np.nan
             flux_2[mask_flux_2] = np.nan
+
+            flux_err_1[mask_flux_1] = np.nan
+            flux_err_2[mask_flux_2] = np.nan
 
             #masking the wavelength with calibration artifact
             lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
@@ -93,6 +97,7 @@ for i in range(len(folder)):
             flux_2_resample, flux_err_2_resample = spectres(new_wav, lam_2_ma_art, flux_2, spec_errs=flux_err_2, verbose=False)
             new_wav_ma = ma.masked_inside(new_wav, 5570, 5585)
             new_wav_ma_2 = ma.masked_inside(new_wav_ma, 6470, 6490)
+            
             flux = flux_1_resample/(flux_err_1_resample) + flux_2_resample/(flux_err_2_resample) / (1/flux_err_1_resample**2 + 1/flux_err_2_resample**2)
             flux_err = np.sqrt((flux_err_1_resample**2 + flux_err_2_resample**2)) 
             
@@ -100,7 +105,7 @@ for i in range(len(folder)):
             spec_new = pd.DataFrame()
             spec_new.insert(0, "WAVELENGTH", new_wav_ma_2)
             spec_new.insert(1, "FLUX", flux)
-            spec_new.insert(2, "FLUX_ERR", flux_err)
+            spec_new.insert(2, "ERR", flux_err)
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
@@ -149,6 +154,8 @@ for i in range(len(folder)):
             mask_flux_1 = np.logical_and.reduce([mask_1,sky_1 > 8.0])
             flux_1[mask_flux_1] = np.nan
 
+            flux_err_1[mask_flux_1] = np.nan
+
             #masking the wavelength with calibration artifact
             lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
 
@@ -160,7 +167,7 @@ for i in range(len(folder)):
             spec_new = pd.DataFrame()
             spec_new.insert(0, "WAVELENGTH", lam_1_ma_art)
             spec_new.insert(1, "FLUX", flux)
-            spec_new.insert(2, "FLUX_ERR", flux_err)
+            spec_new.insert(2, "ERR", flux_err)
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
