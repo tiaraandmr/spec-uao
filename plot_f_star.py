@@ -60,6 +60,7 @@ for i in range(len(calib)):
     #masking bad data and sky lines
     mask_flux = np.logical_and(mask, sky)
     flux[mask_flux] = np.nan
+    flux_err[mask_flux] = np.nan
 
     #masking the wavelength with calibration artifact
     lam_ma_art = ma.masked_inside(wav, 5570, 5585)
