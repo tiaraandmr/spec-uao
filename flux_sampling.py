@@ -1,7 +1,7 @@
 #!/usr/bin/python python3
 
 # Import packages
-import os
+import os, shutil
 import numpy as np
 from matplotlib import rc
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ rc('text', usetex=True)
 home = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/'
 
 # Load the template
-calib_path = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/ffeige34.dat'
+calib_path = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/calib_dat/ffeige34.dat'
 calib = np.genfromtxt(calib_path)
 calib[:, 1:2] *= 10  # Convert to same units as observed spectrum
 
@@ -33,6 +33,7 @@ flux_calib_resample, flux_err_calib_resample = spectres(new_wav, calib[:, 0], ca
 
 # calculate the flux sampling
 sampling = flux_calib_resample / calib_obs['FLUX']
+sampling_err = sampling * np.sqrt((flux_err_calib_resample/flux_calib_resample)**2 + (calib_obs['ERR']/calib_obs['FLUX'])**2)
 
 # automatically set the x-limit for every spectra
 good = np.invert(np.isnan(sampling))
@@ -41,12 +42,12 @@ good = np.invert(np.isnan(sampling))
 spec_new = pd.DataFrame()
 spec_new.insert(0, "WAVELENGTH", new_wav)
 spec_new.insert(1, "FLUX", sampling)
+spec_new.insert(2, "ERR", sampling_err)
 
 #convert DataFrame into Table
 spec_tab = Table.from_pandas(spec_new)
 
 #save each spectrum into clean_spec directory
-#os.chdir(home)
 spec_tab.write(home+'Feige34_sampling.fits')
 
 # define the figure and font size
