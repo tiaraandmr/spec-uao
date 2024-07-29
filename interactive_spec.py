@@ -22,11 +22,11 @@ args = parser.parse_args()
 spec_id = args.id
 
 # Load the observed spectrum
-spec_obs_path = f'/Users/saraswati/Documents/Work/spec-uao/clean_spec/{spec_id}.fits'
+spec_obs_path = f'/Users/saraswati/Documents/Work/spec-uao/calibrated_spec/{spec_id}.fits'
 spec_obs = Table.read(spec_obs_path)
 
 # Create a new wavelength array for both spectra
-new_wav = spec_obs['WAVELENGTH']
+new_wav = spec_obs['WAVE']
 flux_calibrated = spec_obs['FLUX']
 
 # Automatically set the x-limit for every spectrum
@@ -42,7 +42,8 @@ species = np.array([['[SII]', 6716.435709204644], ['[SII]', 6730.811841618589], 
                     ['[OIII]', 5006.843330296288], ['[OIII]', 4958.91106815638], ['[OIII]', 4363.2096874449635], ['[NeIII]', 3868.7632032493057], 
                     ['[NeV]', 3425.8676240424247], ['[NeV]', 3345.828076914398], ['[OI]', 6300.303551730963], ['[OI]', 6363.776506749638], 
                     ['[OII]', 3727.4199178007175], ['HI', 6562.797027356974], ['HI', 4861.321979760415], ['HI', 4340.459677187083], 
-                    ['CIV', 1548.8576020874154], ['HeII', 1639.7908206670402], ['CIII]', 1908.1020362243723], ['MgII', 2798.2921038031536]])
+                    ['CIV', 1548.8576020874154], ['HeII', 1639.7908206670402], ['CIII]', 1908.1020362243723], ['MgII', 2798.2921038031536],
+                    ['LyA', 1216], ['4000AB', 4000], ['Ca H', 3934], ['Ca K', 3969], ['Mg', 5175], ['Na', 5894]])
 
 # define the figure and font size
 plt.rcParams.update({'font.size': 14})
