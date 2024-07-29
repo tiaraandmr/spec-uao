@@ -57,11 +57,12 @@ ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', lab
 
 #setting the x- and y-axis limit
 ax.set_xlim(new_wav[good].min(), new_wav[good].max())
-ax.set_ylim(flux_calibrated.min(), 1.5*flux_calibrated.max())
+ax.set_ylim(np.nanmin(spec_convolve), 1.5*np.nanmax(spec_convolve))
 
 # Plot lines
-lines = [ax.vlines(line, flux_calibrated.min(), flux_calibrated.max(), color = 'black', ls = '--')
+lines = [ax.vlines(line, np.nanmin(spec_convolve), np.nanmax(spec_convolve), color = 'black', ls = '--')
          for line in species[:, 1].astype('float64')]
+labels = [ax.text(float(line),1.25*np.nanmax(spec_convolve),label,ha='center',va='center',rotation=90) for label,line in species]
 
 # Update function
 def submit(redshift):
@@ -71,8 +72,10 @@ def submit(redshift):
     # Update line positions
     for line_obj, line in zip(lines, species[:, 1].astype('float64')):
         line_obj.set_segments(
-            [[(line * (1 + z), flux_calibrated.min()), (line * (1 + z), 1.25*flux_calibrated.max())]]
+            [[(line * (1 + z), np.nanmin(spec_convolve)), (line * (1 + z), 1.1*np.nanmax(spec_convolve))]]
         )
+    for label, line in zip(labels, species[:, 1].astype('float64')):
+        label.set_x(line * (1+z))
     
     ax.relim()
     ax.autoscale_view()
