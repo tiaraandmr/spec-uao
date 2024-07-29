@@ -76,8 +76,10 @@ for i in range(len(folder)):
             wav_2 = crval1 + np.arange(len(flux_2)) * cdelt1
 
             #masking bad data and sky lines
-            mask_flux_1 = np.logical_or(mask_1,sky_1 < -0.1)
-            mask_flux_2 = np.logical_or(mask_2,sky_2 < -0.1)
+            mask_flux_1 = np.logical_or(mask_1, sky_1 < -0.1)
+            mask_flux_2 = np.logical_or(mask_2, sky_2 < -0.1)
+
+            #mask_tmp = np.logical_and(mask_flux_1, mask_flux_2)
 
             flux_1[mask_flux_1] = np.nan
             flux_2[mask_flux_2] = np.nan
@@ -106,6 +108,7 @@ for i in range(len(folder)):
             spec_new.insert(0, "WAVELENGTH", new_wav_ma_2)
             spec_new.insert(1, "FLUX", flux)
             spec_new.insert(2, "ERR", flux_err)
+            #spec_new.insert(3, "MASK", flux.mask)
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
@@ -151,9 +154,11 @@ for i in range(len(folder)):
             wav_1 = crval1 + np.arange(len(flux_1)) * cdelt1
 
             #masking bad data and sky lines
-            mask_flux_1 = np.logical_and.reduce([mask_1,sky_1 > 8.0])
-            flux_1[mask_flux_1] = np.nan
+            mask_flux_1 = np.logical_and.reduce([mask_1, sky_1 < -0.1])
 
+            #mask_tmp = mask_flux_1
+
+            flux_1[mask_flux_1] = np.nan
             flux_err_1[mask_flux_1] = np.nan
 
             #masking the wavelength with calibration artifact
@@ -168,6 +173,7 @@ for i in range(len(folder)):
             spec_new.insert(0, "WAVELENGTH", lam_1_ma_art)
             spec_new.insert(1, "FLUX", flux)
             spec_new.insert(2, "ERR", flux_err)
+            #spec_new.insert(3, "MASK", mask_tmp)
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
