@@ -62,19 +62,17 @@ for f in folder:
         spec_obs = Table.read(spec_obs_path)
 
         # create a new wavelength array for both spectra
-        new_wav = spec_obs['WAVELENGTH']
+        new_wav = spec_obs['WAVE']
         flux = spec_obs['FLUX']
-        err = spec_obs['ERR']
+        err = spec_obs['ERROR']
+        mask = spec_obs['MASK']
 
         # resample the 'sampling' spectra based on the new wavelength array
         flux_sampling_resample, flux_err_sampling_resample = spectres(new_wav, sampling['WAVELENGTH'], sampling['FLUX'], spec_errs=sampling['ERR'], verbose=False)
 
         # Apply the flux sampling to the observed spectra
         flux_calibrated = spec_obs['FLUX'] * flux_sampling_resample
-        flux_err_calibrated = flux_calibrated * np.sqrt((flux_err_sampling_resample/flux_sampling_resample)**2 + (spec_obs['ERR']/spec_obs['FLUX'])**2)
-
-        # Get the mask
-        mask = np.logical_or.reduce([flux_calibrated.mask,np.isnan(flux_calibrated),flux_err_calibrated.mask,np.isnan(flux_err_calibrated)])
+        flux_err_calibrated = flux_calibrated * np.sqrt((flux_err_sampling_resample/flux_sampling_resample)**2 + (spec_obs['ERROR']/spec_obs['FLUX'])**2)
 
         #smooth the spectra
         N = 5
