@@ -114,7 +114,7 @@ for i in range(len(folder)):
             spec_new = pd.DataFrame()
             spec_new.insert(0, "WAVE", new_wav)
             spec_new.insert(1, "FLUX", flux)
-            spec_new.insert(2, "ERR", flux_err)
+            spec_new.insert(2, "ERROR", flux_err)
             spec_new.insert(3, "MASK", np.logical_or(np.isnan(flux),np.isnan(flux_err)))
 
             #convert DataFrame into Table
@@ -184,7 +184,7 @@ for i in range(len(folder)):
             spec_new = pd.DataFrame()
             spec_new.insert(0, "WAVE", wav_1)
             spec_new.insert(1, "FLUX", flux_1)
-            spec_new.insert(2, "ERR", flux_err_1)
+            spec_new.insert(2, "ERROR", flux_err_1)
             spec_new.insert(3, "MASK", np.logical_or(np.isnan(flux_1),np.isnan(flux_err_1)))
 
             #convert DataFrame into Table
