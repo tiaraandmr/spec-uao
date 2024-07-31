@@ -64,8 +64,8 @@ for i in range(len(folder)):
             flux_err_2 = data_2[1]
 
             #mask for bad data
-            mask_1 = data_1[3]
-            mask_2 = data_2[3]
+            mask_dq_1 = data_1[3]
+            mask_dq_2 = data_2[3]
 
             #sky lines
             sky_1 = data_1[2]
@@ -75,40 +75,47 @@ for i in range(len(folder)):
             wav_1 = crval1 + np.arange(len(flux_1)) * cdelt1
             wav_2 = crval1 + np.arange(len(flux_2)) * cdelt1
 
-            #masking bad data and sky lines
-            mask_flux_1 = np.logical_or(mask_1, sky_1 < -0.1)
-            mask_flux_2 = np.logical_or(mask_2, sky_2 < -0.1)
-
-            #mask_tmp = np.logical_and(mask_flux_1, mask_flux_2)
-
-            flux_1[mask_flux_1] = np.nan
-            flux_2[mask_flux_2] = np.nan
-
-            flux_err_1[mask_flux_1] = np.nan
-            flux_err_2[mask_flux_2] = np.nan
+            #masking sky lines
+            mask_skyline_1 = sky_1 < -0.1
+            mask_skyline_2 = sky_2 < -0.1
 
             #masking the wavelength with calibration artifact
-            lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
-            lam_2_ma_art = ma.masked_inside(wav_2, 5570, 5585)
+            regions = [[5570,5585],[6470,6490]]
+            mask_badskysub_1 = np.logical_or.reduce([
+                np.logical_and(wav_1 > r[0], wav_1 < r[1]) for r in regions
+            ])
+            mask_badskysub_2 = np.logical_or.reduce([
+                np.logical_and(wav_2 > r[0], wav_2 < r[1]) for r in regions
+            ])
+
+            # Create overall mask
+            mask_1 = np.logical_and.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
+            mask_2 = np.logical_and.reduce([mask_dq_2,mask_skyline_2,mask_badskysub_2])
+
+            # Mask in the array
+            flux_1[mask_1] = np.nan
+            flux_2[mask_2] = np.nan
+
+            flux_err_1[mask_1] = np.nan
+            flux_err_2[mask_2] = np.nan
 
             #create a new wavelength array for both spectra
             new_wav = np.arange(-1, max(len(flux_1),len(flux_2)) + 1) * cdelt1 + (crval1 + crval2) / 2
 
             #resample both spectra based on the new wavelength array
-            flux_1_resample, flux_err_1_resample = spectres(new_wav, lam_1_ma_art, flux_1, spec_errs=flux_err_1, verbose=False)
-            flux_2_resample, flux_err_2_resample = spectres(new_wav, lam_2_ma_art, flux_2, spec_errs=flux_err_2, verbose=False)
-            new_wav_ma = ma.masked_inside(new_wav, 5570, 5585)
-            new_wav_ma_2 = ma.masked_inside(new_wav_ma, 6470, 6490)
+            flux_1_resample, flux_err_1_resample = spectres(new_wav, wav_1, flux_1, spec_errs=flux_err_1, verbose=False)
+            flux_2_resample, flux_err_2_resample = spectres(new_wav, wav_2, flux_2, spec_errs=flux_err_2, verbose=False)
             
+            # Coadd
             flux = flux_1_resample/(flux_err_1_resample) + flux_2_resample/(flux_err_2_resample) / (1/flux_err_1_resample**2 + 1/flux_err_2_resample**2)
-            flux_err = np.sqrt((flux_err_1_resample**2 + flux_err_2_resample**2)) 
+            flux_err = flux * np.sqrt((flux_err_1_resample**2 + flux_err_2_resample**2)) 
             
             #save spectra into a DataFrame
             spec_new = pd.DataFrame()
-            spec_new.insert(0, "WAVELENGTH", new_wav_ma_2)
+            spec_new.insert(0, "WAVE", new_wav)
             spec_new.insert(1, "FLUX", flux)
             spec_new.insert(2, "ERR", flux_err)
-            #spec_new.insert(3, "MASK", flux.mask)
+            spec_new.insert(3, "MASK", np.logical_or(np.isnan(flux),np.isnan(flux_err)))
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
@@ -145,7 +152,7 @@ for i in range(len(folder)):
             flux_err_1 = data_1[1]
 
             #mask for bad data
-            mask_1 = data_1[3]
+            mask_dq_1 = data_1[3]
 
             #sky lines
             sky_1 = data_1[2]
@@ -153,27 +160,32 @@ for i in range(len(folder)):
             #build the wavelength array
             wav_1 = crval1 + np.arange(len(flux_1)) * cdelt1
 
-            #masking bad data and sky lines
-            mask_flux_1 = np.logical_and.reduce([mask_1, sky_1 < -0.1])
-
-            #mask_tmp = mask_flux_1
-
-            flux_1[mask_flux_1] = np.nan
-            flux_err_1[mask_flux_1] = np.nan
+            #masking sky lines
+            mask_skyline_1 = sky_1 < -0.1
 
             #masking the wavelength with calibration artifact
-            lam_1_ma_art = ma.masked_inside(wav_1, 5570, 5585)
+            regions = [[5570,5585],[6470,6490]]
+            mask_badskysub_1 = np.logical_or.reduce([
+                np.logical_and(wav_1 > r[0], wav_1 < r[1]) for r in regions
+            ])
 
-            #final flux and flux_err
-            flux = flux_1
-            flux_err = flux_err_1
+            # Create overall mask
+            mask_1 = np.logical_and.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
+
+            # Mask in the array
+            flux_1[mask_1] = np.nan
+
+            flux_err_1[mask_1] = np.nan
+
+            #create a new wavelength array for both spectra
+            new_wav = np.arange(-1, max(len(flux_1),len(flux_2)) + 1) * cdelt1 + (crval1 + crval2) / 2
 
             #save spectra into a DataFrame
             spec_new = pd.DataFrame()
-            spec_new.insert(0, "WAVELENGTH", lam_1_ma_art)
-            spec_new.insert(1, "FLUX", flux)
-            spec_new.insert(2, "ERR", flux_err)
-            #spec_new.insert(3, "MASK", mask_tmp)
+            spec_new.insert(0, "WAVE", wav_1)
+            spec_new.insert(1, "FLUX", flux_1)
+            spec_new.insert(2, "ERR", flux_err_1)
+            spec_new.insert(3, "MASK", np.logical_or(np.isnan(flux_1),np.isnan(flux_err_1)))
 
             #convert DataFrame into Table
             spec_tab = Table.from_pandas(spec_new)
