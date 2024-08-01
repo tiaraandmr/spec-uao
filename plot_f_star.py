@@ -16,7 +16,7 @@ rc('text', usetex=True)
 
 #define path to the .FITS file
 home = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/'
-exclude = ["plot_calib", "clean_calib", "calib_dat"]
+exclude = ["plot_calib", "clean_calib", "calib_dat", "plot_sampling", "fits_sampling"]
 calib = sorted((f for f in os.listdir(home) if not f.startswith(tuple(exclude))), key=str.lower)
 
 plot_calib = '/Users/saraswati/Documents/Work/spec-uao/calibration_star/plot_calib/'
@@ -49,28 +49,38 @@ for i in range(len(calib)):
     flux_err = data[1]
 
     #mask for bad data
-    mask = data[3]
+    mask_dq = data[3]
 
     #sky lines
-    sky = data[2]
+    #sky = data[2]
 
     #build the wavelength array
     wav = crval1 + np.arange(len(flux)) * cdelt1
 
-    #masking bad data and sky lines
-    mask_flux = np.logical_and(mask, sky)
-    flux[mask_flux] = np.nan
-    flux_err[mask_flux] = np.nan
+    #masking sky lines
+    #mask_skyline = sky < -0.1
 
     #masking the wavelength with calibration artifact
-    lam_ma_art = ma.masked_inside(wav, 5570, 5585)
-    lam_ma_art_2 = ma.masked_inside(wav, 6470, 6490)
+    regions = [[5570,5585],[6470,6490],[9075,9125]]
+    mask_badskysub = np.logical_or.reduce([
+        np.logical_and(wav > r[0], wav < r[1]) for r in regions
+    ])
+
+    # Create overall mask
+    #mask = np.logical_or.reduce([mask_dq,mask_skyline,mask_badskysub])
+    mask = np.logical_or.reduce([mask_dq,mask_badskysub])
+
+    # Mask in the array
+    flux[mask] = np.nan
+
+    flux_err[mask] = np.nan
 
     #save spectra into a DataFrame
     spec_new = pd.DataFrame()
-    spec_new.insert(0, "WAVELENGTH", lam_ma_art_2)
+    spec_new.insert(0, "WAVE", wav)
     spec_new.insert(1, "FLUX", flux)
-    spec_new.insert(2, "ERR", flux_err)
+    spec_new.insert(2, "ERROR", flux_err)
+    spec_new.insert(3, "MASK", np.logical_or(np.isnan(flux),np.isnan(flux_err)))
 
     #convert DataFrame into Table
     spec_tab = Table.from_pandas(spec_new)
@@ -88,8 +98,10 @@ for i in range(len(calib)):
     plt.rcParams.update({'font.size': 17})
 
     #plot the spectrum and set the x-limit
-    plt.plot(lam_ma_art_2, flux, color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+    plt.plot(wav, flux, color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+    #plt.plot(wav, sky, color='black', linewidth=2.0, drawstyle='steps-mid')
     plt.xlim(wav[good].min(), wav[good].max())
+    #plt.xlim(6400,6600)
                 
     #define x and y label and plot title
     plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
