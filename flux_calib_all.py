@@ -68,7 +68,7 @@ for f in folder:
         mask = spec_obs['MASK']
 
         # resample the 'sampling' spectra based on the new wavelength array
-        flux_sampling_resample, flux_err_sampling_resample = spectres(new_wav, sampling['WAVELENGTH'], sampling['FLUX'], spec_errs=sampling['ERR'], verbose=False)
+        flux_sampling_resample, flux_err_sampling_resample = spectres(new_wav, sampling['WAVE'], sampling['FLUX'], spec_errs=sampling['ERROR'], verbose=False)
 
         # Apply the flux sampling to the observed spectra
         flux_calibrated = spec_obs['FLUX'] * flux_sampling_resample
@@ -80,14 +80,18 @@ for f in folder:
         # spec_err_convolve = convolve(flux_err_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
 
         #save spectra into a DataFrame
-        spec_new = pd.DataFrame()
-        spec_new.insert(0, "WAVE", new_wav)
-        spec_new.insert(1, "FLUX", flux_calibrated)
-        spec_new.insert(2, "ERROR", flux_err_calibrated)
-        spec_new.insert(3, "MASK", mask)
+        #spec_new = pd.DataFrame()
+        #spec_new.insert(0, "WAVE", new_wav)
+        #spec_new.insert(1, "FLUX", flux_calibrated)
+        #spec_new.insert(2, "ERROR", flux_err_calibrated)
+        #spec_new.insert(3, "MASK", np.logical_or(mask, np.isnan(flux_calibrated)))
+        
+        mask = np.logical_or(np.isnan(flux_calibrated), np.isnan(flux_err_calibrated))
+
+        spec_tab = Table([new_wav, flux_calibrated, flux_err_calibrated, mask], names=('WAVE', 'FLUX', 'ERROR', 'MASK'))
 
         #convert DataFrame into Table
-        spec_tab = Table.from_pandas(spec_new)
+        #spec_tab = Table.from_pandas(spec_new)
 
         #save each spectrum into clean_spec directory
         os.chdir(calibrated_spec)
