@@ -58,12 +58,13 @@ ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', lab
 
 #setting the x- and y-axis limit
 ax.set_xlim(new_wav[good].min(), new_wav[good].max())
-ax.set_ylim(np.nanmin(spec_convolve), 1.5*np.nanmax(spec_convolve))
+#ax.set_xlim(9000,9200)
+ax.set_ylim(np.nanmin(spec_convolve), 1.7*np.nanmax(spec_convolve))
 
 # Plot lines
 lines = [ax.vlines(line, np.nanmin(spec_convolve), np.nanmax(spec_convolve), color = 'black', ls = '--')
          for line in species[:, 1].astype('float64')]
-labels = [ax.text(float(line),1.25*np.nanmax(spec_convolve),label,ha='center',va='center',rotation=90) for label,line in species]
+labels = [ax.text(float(line),1.4*np.nanmax(spec_convolve),label,ha='center',va='center',rotation=90) for label,line in species]
 
 # Update function
 def submit(redshift):
