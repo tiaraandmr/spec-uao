@@ -8,6 +8,10 @@ import pandas as pd
 from astropy.table import Table, join
 
 import matplotlib.pyplot as plt
+from matplotlib import rc
+rc('font',**{'family':'serif','serif':['lmodern']})
+rc('text', usetex=True)
+
 from spectres import spectres
 from astropy.io import fits
 
@@ -20,6 +24,11 @@ clean_spec = '/Users/saraswati/Documents/Work/spec-uao/clean_spec/'
 if os.path.exists(clean_spec):
     shutil.rmtree(clean_spec)
 os.makedirs(clean_spec)
+
+plot_spec = '/Users/saraswati/Documents/Work/spec-uao/plot_spec/'
+if os.path.exists(plot_spec):
+    shutil.rmtree(plot_spec)
+os.makedirs(plot_spec)
 
 for i in range(len(folder)):
     #list the folder inside home directory
@@ -80,7 +89,7 @@ for i in range(len(folder)):
             mask_skyline_2 = sky_2 < -0.1
 
             #masking the wavelength with calibration artifact
-            regions = [[5570,5585],[6470,6490]]
+            regions = [[5570,5585],[6470,6490],[9075,9125]]
             mask_badskysub_1 = np.logical_or.reduce([
                 np.logical_and(wav_1 > r[0], wav_1 < r[1]) for r in regions
             ])
@@ -89,8 +98,10 @@ for i in range(len(folder)):
             ])
 
             # Create overall mask
-            mask_1 = np.logical_and.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
-            mask_2 = np.logical_and.reduce([mask_dq_2,mask_skyline_2,mask_badskysub_2])
+            mask_1 = np.logical_or.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
+            mask_2 = np.logical_or.reduce([mask_dq_2,mask_skyline_2,mask_badskysub_2])
+            #mask_1 = np.logical_or.reduce([mask_dq_1,mask_badskysub_1])
+            #mask_2 = np.logical_or.reduce([mask_dq_2,mask_badskysub_2])
 
             # Mask in the array
             flux_1[mask_1] = np.nan
@@ -123,6 +134,29 @@ for i in range(len(folder)):
             #save each spectrum into clean_spec directory
             os.chdir(clean_spec)
             spec_tab.write(name_clean+'.fits')
+
+            #automatically set the x-limit for every spectra
+            good = np.invert(np.isnan(spec_new['FLUX']))
+
+            #define the figure and font size
+            plt.figure(figsize=(17,5))
+            plt.rcParams.update({'font.size': 17})
+
+            #plot the spectrum and set the x-limit
+            plt.plot(spec_new['WAVE'], spec_new['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+            #plt.plot(wav_1, sky_1, color='black', linewidth=2.0, drawstyle='steps-mid')
+            plt.xlim(spec_new['WAVE'][good].min(),spec_new['WAVE'][good].max())
+            #plt.xlim(8000,8200)
+            
+            #define x and y label and plot title
+            plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
+            plt.ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]')
+            #title = Path(list_spec[i]).stem
+            plt.title(name_clean)
+
+            #save the plot as .pdf
+            plt.savefig(plot_spec+name_clean+'.pdf', dpi=1000, bbox_inches="tight")
+            plt.close()
     
     #for folder with 1 days of observation data
     elif len(spectra) == 1:
@@ -164,13 +198,14 @@ for i in range(len(folder)):
             mask_skyline_1 = sky_1 < -0.1
 
             #masking the wavelength with calibration artifact
-            regions = [[5570,5585],[6470,6490]]
+            regions = [[5570,5585],[6470,6490],[9075,9125]]
             mask_badskysub_1 = np.logical_or.reduce([
                 np.logical_and(wav_1 > r[0], wav_1 < r[1]) for r in regions
             ])
 
             # Create overall mask
-            mask_1 = np.logical_and.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
+            mask_1 = np.logical_or.reduce([mask_dq_1,mask_skyline_1,mask_badskysub_1])
+            #mask_1 = np.logical_or.reduce([mask_dq_1,mask_badskysub_1])
 
             # Mask in the array
             flux_1[mask_1] = np.nan
@@ -193,6 +228,29 @@ for i in range(len(folder)):
             #save each spectrum into clean_spec directory
             os.chdir(clean_spec)
             spec_tab.write(name_clean+'.fits')
+
+            #automatically set the x-limit for every spectra
+            good = np.invert(np.isnan(spec_new['FLUX']))
+
+            #define the figure and font size
+            plt.figure(figsize=(17,5))
+            plt.rcParams.update({'font.size': 17})
+
+            #plot the spectrum and set the x-limit
+            plt.plot(spec_new['WAVE'], spec_new['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+            #plt.plot(spec_new['WAVE'], sky_1, color='black', linewidth=2.0, drawstyle='steps-mid')
+            plt.xlim(spec_new['WAVE'][good].min(),spec_new['WAVE'][good].max())
+            #plt.xlim(8000,8200)
+            
+            #define x and y label and plot title
+            plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
+            plt.ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]')
+            #title = Path(list_spec[i]).stem
+            plt.title(name_clean)
+
+            #save the plot as .pdf
+            plt.savefig(plot_spec+name_clean+'.pdf', dpi=1000, bbox_inches="tight")
+            plt.close()
     
     #for folder with no observation data
     elif len(spectra) == 0:
