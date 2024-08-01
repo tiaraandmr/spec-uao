@@ -35,7 +35,9 @@ for i in range(len(list_spec)):
 
     #plot the spectrum and set the x-limit
     plt.plot(spec_data['WAVE'], spec_data['FLUX'], color='firebrick', linewidth=2.0, drawstyle='steps-mid')
+    plt.plot(spec_data['WAVE'], spec_data['MASK'], color='black', linewidth=2.0, drawstyle='steps-mid')
     plt.xlim(spec_data['WAVE'][good].min(),spec_data['WAVE'][good].max())
+    #plt.xlim(5500,5700)
     
     #define x and y label and plot title
     plt.xlabel(r'Observed Wavelength [$ \rm \AA$]')
