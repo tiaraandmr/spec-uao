@@ -26,6 +26,11 @@ if os.path.exists(calibrated_spec):
     shutil.rmtree(calibrated_spec)
 os.makedirs(calibrated_spec)
 
+fit_spec = '/Users/saraswati/Documents/Work/spec-uao/fit_spec/'
+if os.path.exists(fit_spec):
+    shutil.rmtree(fit_spec)
+os.makedirs(fit_spec)
+
 for f in folder:
 
     #list the folder inside home directory
@@ -78,21 +83,24 @@ for f in folder:
         N = 5
         # spec_convolve = convolve(flux_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
         # spec_err_convolve = convolve(flux_err_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
-
-        #save spectra into a DataFrame
-        #spec_new = pd.DataFrame()
-        #spec_new.insert(0, "WAVE", new_wav)
-        #spec_new.insert(1, "FLUX", flux_calibrated)
-        #spec_new.insert(2, "ERROR", flux_err_calibrated)
-        #spec_new.insert(3, "MASK", np.logical_or(mask, np.isnan(flux_calibrated)))
         
         mask = np.logical_or(np.isnan(flux_calibrated), np.isnan(flux_err_calibrated))
 
         spec_tab = Table([new_wav, flux_calibrated, flux_err_calibrated, mask], names=('WAVE', 'FLUX', 'ERROR', 'MASK'))
-
-        #convert DataFrame into Table
-        #spec_tab = Table.from_pandas(spec_new)
-
-        #save each spectrum into clean_spec directory
+       
+        #save each spectrum into calibrated_spec directory
         os.chdir(calibrated_spec)
         spec_tab.write(name_clean+'.fits')
+
+        # fits table for fitting purpose
+        wav_fit = np.log10(spec_obs['WAVE'])
+        flux_fit = spec_obs['FLUX']
+        ivar_fit = 1 / np.sqrt(spec_obs['ERROR'])
+
+        spec_fit = Table([wav_fit, flux_fit, ivar_fit], names=('loglam', 'flux', 'ivar'))
+
+        #save each spectrum into fit_spec directory
+        os.chdir(fit_spec)
+        spec_fit.write(name_clean+'.fits')
+
+        
