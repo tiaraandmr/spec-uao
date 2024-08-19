@@ -78,12 +78,6 @@ for f in folder:
         # Apply the flux sampling to the observed spectra
         flux_calibrated = spec_obs['FLUX'] * flux_sampling_resample
         flux_err_calibrated = flux_calibrated * np.sqrt((flux_err_sampling_resample/flux_sampling_resample)**2 + (spec_obs['ERROR']/spec_obs['FLUX'])**2)
-
-        #smooth the spectra
-        N = 5
-        # spec_convolve = convolve(flux_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
-        # spec_err_convolve = convolve(flux_err_calibrated, np.ones(N), boundary='extend', normalize_kernel=True)
-        
         mask = np.logical_or(np.isnan(flux_calibrated), np.isnan(flux_err_calibrated))
 
         spec_tab = Table([new_wav, flux_calibrated, flux_err_calibrated, mask], names=('WAVE', 'FLUX', 'ERROR', 'MASK'))
@@ -93,9 +87,12 @@ for f in folder:
         spec_tab.write(name_clean+'.fits')
 
         # fits table for fitting purpose
-        wav_fit = np.log10(spec_obs['WAVE'])
-        flux_fit = spec_obs['FLUX']
-        ivar_fit = 1 / np.sqrt(spec_obs['ERROR'])
+        wav_fit = np.log10(new_wav)
+        #wav_fit = np.log10(spec_obs['WAVE'])
+        flux_fit = flux_calibrated
+        #flux_fit = spec_obs['FLUX']
+        ivar_fit = 1 / np.sqrt(flux_err_calibrated)
+        #ivar_fit = 1 / np.sqrt(spec_obs['ERROR'])
 
         spec_fit = Table([wav_fit, flux_fit, ivar_fit], names=('loglam', 'flux', 'ivar'))
 
