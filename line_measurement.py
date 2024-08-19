@@ -14,7 +14,7 @@ from astropy.io import fits
 
 # Open results file
 home = '/Users/saraswati/Documents/Work/spec-uao/'
-results_path = home+'results/GELATO-results.fits'
+results_path = home+'results_low_z_broad/GELATO-results.fits'
 results = Table.read(results_path, 1)
 
 ratio_1 = pd.Series([], dtype='float64')
@@ -24,28 +24,38 @@ ratio_2_err = pd.Series([], dtype='float64')
 ratio_3 = pd.Series([], dtype='float64')
 ratio_3_err = pd.Series([], dtype='float64')
 name_clean = pd.Series([], dtype='int')
-rest_color_val = pd.Series([], dtype='float64')
-rest_color_err = pd.Series([], dtype='float64')
+rest_color_val_agn = pd.Series([], dtype='float64')
+rest_color_err_agn = pd.Series([], dtype='float64')
+rest_color_val_gal = pd.Series([], dtype='float64')
+rest_color_err_gal = pd.Series([], dtype='float64')
+fval = pd.Series([], dtype='float64')
+snr_ne_v = pd.Series([], dtype='float64')
 
 # Open rest frame color file
 rest_color_path = home+'SED-concat.fits'
-rest_color = Table.read(rest_color_path,1)
+rest_color_agn = Table.read(rest_color_path,1)
+rest_color_gal = Table.read(rest_color_path,2)
+p_agn = Table.read(rest_color_path,3)
 
 for i in range(len(results)):
 
     # Line flux value
-    ne_III = results['AGN_[NeIII]_3869.86_Flux'][i]
-    ne_III_err = results['AGN_[NeIII]_3869.86_Flux_err'][i]
-    o_II = results['SF_[OII]_3728.48_Flux'][i]
-    o_II_err = results['SF_[OII]_3728.48_Flux_err'][i]
-    o_III = results['AGN_[OIII]_5008.24_Flux'][i]
-    o_III_err = results['AGN_[OIII]_5008.24_Flux_err'][i]
-    h_beta = results['Balmer_HI_4862.68_Flux'][i] 
-    h_beta_err = results['Balmer_HI_4862.68_Flux_err'][i]
-    n_II = results['AGN_[NII]_6585.27_Flux'][i]
-    n_II_err = results['AGN_[NII]_6585.27_Flux_err'][i]
-    h_alpha = results['Balmer_HI_6564.61_Flux'][i]
-    h_alpha_err = results['Balmer_HI_6564.61_Flux_err'][i]
+    ne_III = results['Narrow_[NeIII]_3868.7632032493057_Flux'][i]
+    ne_III_err = results['Narrow_[NeIII]_3868.7632032493057_Flux_err'][i]
+    o_II = results['Narrow_[OII]_3727.4199178007175_Flux'][i]
+    o_II_err = results['Narrow_[OII]_3727.4199178007175_Flux_err'][i]
+    o_III = results['Narrow_[OIII]_5006.843330296288_Flux'][i]
+    o_III_err = results['Narrow_[OIII]_5006.843330296288_Flux_err'][i]
+    h_beta = results['Balmer_HI_4861.321979760415_Flux'][i] 
+    h_beta_err = results['Balmer_HI_4861.321979760415_Flux_err'][i]
+    n_II = results['Narrow_[NII]_6583.451474377235_Flux'][i]
+    n_II_err = results['Narrow_[NII]_6583.451474377235_Flux_err'][i]
+    h_alpha = results['Balmer_HI_6562.797027356974_Flux'][i]
+    h_alpha_err = results['Balmer_HI_6562.797027356974_Flux_err'][i]
+    ne_v = results['Narrow_[NeV]_3345.828076914398_Flux'][i]
+    ne_v_err = results['Narrow_[NeV]_3345.828076914398_Flux_err'][i]
+
+    snr_ne_v[i] = float(ne_v / ne_v_err)
 
     # List the line
     lines_1 = [ne_III, o_II] 
@@ -90,14 +100,28 @@ for i in range(len(results)):
     
     name_clean[i] = results['Name'][i].rsplit('.', 1)[0]
 
-    for m in range(len(rest_color)):
-        if int(rest_color['ID'][m]) == int(name_clean[i]):
-            rc_z = rest_color['rest_sdss_z'][m]
-            err_rc_z = rest_color['rest_sdss_z_err'][m]
-            rc_g = rest_color['rest_sdss_g'][m]
-            err_rc_g = err_rc_z = rest_color['rest_sdss_g_err'][m]
-            rest_color_val[i] = 2.5 * np.log10(rc_z/rc_g)
-            rest_color_err[i] = 2.5 * 0.434 * np.sqrt((err_rc_z/rc_z)+(err_rc_g/rc_g))
+    for m in range(len(rest_color_agn)):
+        if int(rest_color_agn['ID'][m]) == int(name_clean[i]):
+            #if p_agn['Fval'][m] > 80:
+                #rc_z = rest_color_agn['rest_sdss_z'][m]
+                #err_rc_z = rest_color_agn['rest_sdss_z_err'][m]
+                #rc_g = rest_color_agn['rest_sdss_g'][m]
+                #err_rc_g = err_rc_z = rest_color_agn['rest_sdss_g_err'][m]
+            rc_z = rest_color_agn['rest_sdss_z'][m]
+            err_rc_z = rest_color_agn['rest_sdss_z_err'][m]
+            rc_g = rest_color_agn['rest_sdss_g'][m]
+            err_rc_g = err_rc_z = rest_color_agn['rest_sdss_g_err'][m]
+            rest_color_val_agn[i] = 2.5 * np.log10(rc_z/rc_g)
+            rest_color_err_agn[i] = 2.5 * 0.434 * np.sqrt((err_rc_z/rc_z)+(err_rc_g/rc_g))
+            fval[i] = p_agn['Fval'][m]   
+            #else:
+            rc_z = rest_color_gal['rest_sdss_z'][m]
+            err_rc_z = rest_color_gal['rest_sdss_z_err'][m]
+            rc_g = rest_color_gal['rest_sdss_g'][m]
+            err_rc_g = err_rc_z = rest_color_gal['rest_sdss_g_err'][m]
+            rest_color_val_gal[i] = 2.5 * np.log10(rc_z/rc_g)
+            rest_color_err_gal[i] = 2.5 * 0.434 * np.sqrt((err_rc_z/rc_z)+(err_rc_g/rc_g))
+                #fval[i] = p_agn['Fval'][m]
         else:
             pass
 
@@ -110,17 +134,15 @@ ratio.insert(3, "O_III/H_Beta_Flux_Ratio", ratio_2)
 ratio.insert(4, "O_III/H_Beta_Flux_Ratio_Err", ratio_2_err)
 ratio.insert(5, "N_II/H_Alpha_Flux_Ratio", ratio_3)
 ratio.insert(6, "N_II/H_Alpha_Flux_Ratio_Err", ratio_3_err)
-ratio.insert(7, "Rest_SDSS_Color", rest_color_val)
-ratio.insert(8, "Rest_SDSS_Color_Err", rest_color_err)
-
-#ratio_tab = Table([name_clean, ratio_1, ratio_1_err, ratio_2, ratio_2_err,
-#                   ratio_3, ratio_3_err, rest_color_val, rest_color_err], 
-#                   names=('ID', 'Ne_III/O_II_Flux_Ratio', 'Ne_III/O_II_Flux_Ratio_Err', 
-#                          'O_III/H_Beta_Flux_Ratio', 'O_III/H_Beta_Flux_Ratio_Err', 'N_II/H_Alpha_Flux_Ratio',
-#                          'N_II/H_Alpha_Flux_Ratio_Err', 'Rest_SDSS_Color', 'Rest_SDSS_Color_Err'))
+ratio.insert(7, "Rest_SDSS_Color_AGN", rest_color_val_agn)
+ratio.insert(8, "Rest_SDSS_Color_Err_AGN", rest_color_err_agn)
+ratio.insert(9, "Rest_SDSS_Color_Gal", rest_color_val_gal)
+ratio.insert(10, "Rest_SDSS_Color_Err_Gal", rest_color_err_gal)
+ratio.insert(11, "SNR_Ne_V", snr_ne_v)
+ratio.insert(12, "P_AGN", fval)                                                                              
 
 #convert DataFrame into Table
 ratio_tab = Table.from_pandas(ratio)
 
-os.chdir(home+'results')
-ratio_tab.write('line_ratio.fits', overwrite=True)
+#os.chdir(home+'results')
+ratio_tab.write('line_ratio_broad.fits', overwrite=True)
