@@ -2,9 +2,9 @@
 UAO-S118-23A
 #clean_spec
 #plot_spec
-smooth_spec
-calibration_star
-calibrated_spec
+#smooth_spec
+#calibration_star
+#calibrated_spec
 
 # Don't keep track of these files
 .ipynb_checkpoints
