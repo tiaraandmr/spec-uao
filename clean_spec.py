@@ -1,4 +1,4 @@
-#!/usr/bin/python python3
+#!/usr/bin/python3
 
 import os, glob, shutil, subprocess as sub
 from pathlib import Path
@@ -15,80 +15,79 @@ rc('text', usetex=True)
 from spectres import spectres
 from astropy.io import fits
 
-#define path to the .FITS file
-home = '/Users/saraswati/Documents/Work/spec-uao/UAO-S118-23A/'
+# Define path to the .FITS file
+home = '/home/tiara/Documents/Work/spec-uao/UAO-S118-23A/'
 exclude = ["BD", "Feige"]
 folder = sorted((f for f in os.listdir(home) if not f.startswith(tuple(exclude))), key=str.lower)
 
-clean_spec = '/Users/saraswati/Documents/Work/spec-uao/clean_spec/'
+# Create new folder for the results
+clean_spec = '/home/tiara/Documents/Work/spec-uao/clean_spec/'
 if os.path.exists(clean_spec):
     shutil.rmtree(clean_spec)
 os.makedirs(clean_spec)
 
-plot_spec = '/Users/saraswati/Documents/Work/spec-uao/plot_spec/'
+plot_spec = '/home/tiara/Documents/Work/spec-uao/plot_spec/'
 if os.path.exists(plot_spec):
     shutil.rmtree(plot_spec)
 os.makedirs(plot_spec)
 
 for i in range(len(folder)):
-    #list the folder inside home directory
+    # List the folder inside home directory
     reduced = home+folder[i]+'/reduced/'
     spectra = sorted(os.listdir(reduced))
     print(len(spectra))
 
-    #for folder with 2 days of observation data
+    # For folder with 2 days of observation data
     if len(spectra) == 2:
-        #list the .FITS file for each observation day
+        # List the .FITS file for each observation day
         prefixes = ["slitA001_1", "slitA015_1", "slitB002_1", "slitB011_1"]
         day_1 = sorted((f for f in os.listdir(reduced+spectra[0]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
         day_2 = sorted((f for f in os.listdir(reduced+spectra[1]+'/obj_abs_1D/') if not f.startswith(tuple(prefixes))), key=str.lower)
 
-        #open .FITS file
+        # Open .FITS file
         for i in range(len(day_1)):
-            #print(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
-
             hdul_1 = fits.open(reduced+spectra[0]+'/obj_abs_1D/'+day_1[i])
             hdul_2 = fits.open(reduced+spectra[1]+'/obj_abs_1D/'+day_2[i])
 
-            #.FITS data
+            # FITS data
             data_1 = hdul_1[0].data
             data_2 = hdul_2[0].data
 
-            #.FITS header
+            # FITS header
             header_1 = hdul_1[0].header
             header_2 = hdul_2[0].header
 
-            #object name and pixel properties
+            # Object name and pixel properties
             name = header_1['OBJECT']
             name_clean = name.rsplit('_', 1)[0]
             crval1 = header_1['CRVAL1']
             crval2 = header_2['CRVAL1']
             cdelt1 = header_1['CDELT1']
 
-            #flux array
+            # Flux array
             flux_1 = data_1[0]
             flux_err_1 = data_1[1]
 
             flux_2 = data_2[0]
             flux_err_2 = data_2[1]
 
-            #mask for bad data
+            # Mask for bad data
             mask_dq_1 = data_1[3]
             mask_dq_2 = data_2[3]
 
-            #sky lines
+            # Sky lines
             sky_1 = data_1[2]
             sky_2 = data_2[2]
 
-            #build the wavelength array
+            # Build the wavelength array
             wav_1 = crval1 + np.arange(len(flux_1)) * cdelt1
             wav_2 = crval1 + np.arange(len(flux_2)) * cdelt1
 
-            #masking sky lines
+            # Masking sky lines
             mask_skyline_1 = sky_1 < -0.1
             mask_skyline_2 = sky_2 < -0.1
 
-            #masking the wavelength with calibration artifact
+            # Masking the wavelength with calibration artifact
             regions = [[5570,5585],[6470,6490],[9075,9125]]
             mask_badskysub_1 = np.logical_or.reduce([
                 np.logical_and(wav_1 > r[0], wav_1 < r[1]) for r in regions
@@ -261,7 +260,7 @@ spectra = glob.glob(clean_spec+'/*')
 IDs = np.array([Path(s).stem for s in spectra]).astype(int)
 
 #join the new object list with the catalog list, then create a new table                 
-table1 = Table.read('/Users/saraswati/Documents/Work/spec-uao/slits.fits')
+table1 = Table.read('/home/tiara/Documents/Work/spec-uao/slits.fits')
 table2 = Table([IDs],names=("ID",))
 new_table = join(table1,table2) 
-new_table.write('/Users/saraswati/Documents/Work/spec-uao/slits_reduced.fits', overwrite=True)
+new_table.write('/home/tiara/Documents/Work/spec-uao/slits_reduced.fits', overwrite=True)
