@@ -30,12 +30,18 @@ conda activate spec-uao
 ```
 
 ## Running the Scripts
-### Cleaning the Spectra
-The spectra is reduced with the Binospec pipeline described [here](https://bitbucket.org/chil_sai/binospec/wiki/Home). The 1D spectra is now split into individual fits file, one spectrum per file. They are distributed bundled up into tar files, whose contents are the 1D files with file names derived from object names submitted with the mask design. For the example here, obj_abs_1D.tar folder is the default folder used. The spectra from the pipeline still need further cleaning from the sky lines and bad data. This script produce new fits table with the cleaned spectrum for each file and preliminary plots for a quicklook.
+### Spectral Cleaning
+The spectra is reduced with the Binospec pipeline described [here](https://bitbucket.org/chil_sai/binospec/wiki/Home). The 1D spectra is now split into individual fits file, one spectrum per file. They are distributed bundled up into tar files, whose contents are the 1D files with file names derived from object names submitted with the mask design. For the example here, obj_abs_1D.tar folder is the default folder used. The spectra from the pipeline still need further cleaning from the sky lines, bad data, and calibration artifact. This script produce new fits table with the cleaned spectrum for each file (clean_spec) and preliminary plots (plot_spec) for a quicklook. After the object ID is obtained, this script also cross-match them with the bigger object catalog "slits.fits", and then produced new catalog with only the object in the sample "slits_reduced.fits".
 
 ```
 python3 clean_spec.py
 ```
 
-### 
+It is advised to always check the path to the fits file written on the beginning of every scripts.
 
+### Spectral Smoothing
+To make it easier to identify the lines, the clean spectra are smoothed to a specific degree. A preliminary redshift (z) values will be plotted together with the rest wavelength of the emission lines (smooth_spec). 
+
+```
+python3 smooth_spec.py
+```
