@@ -29,7 +29,7 @@ The environment will then be installed under the name spec-uao and can then be a
 conda activate spec-uao
 ```
 
-## Running the Scripts
+## Running the Scripts - Data Calibration
 ### Spectral Cleaning
 The spectra is reduced with the Binospec pipeline described [here](https://bitbucket.org/chil_sai/binospec/wiki/Home). The 1D spectra is now split into individual fits file, one spectrum per file. They are distributed bundled up into tar files, whose contents are the 1D files with file names derived from object names submitted with the mask design. For the example here, obj_abs_1D.tar folder is the default folder used. The spectra from the pipeline still need further cleaning from the sky lines, bad data, and calibration artifact. This script produce new fits table with the cleaned spectrum for each file (clean_spec) and preliminary plots (plot_spec) for a quicklook. After the object ID is obtained, this script also cross-match them with the bigger object catalog "slits.fits", and then produced new catalog with only the object in the sample "slits_reduced.fits".
 
@@ -59,9 +59,11 @@ python3 flux_calib_all.py
 ```
 
 ### Redshift Estimation
-We can determine the redshift by searching for a prominent emission or absorption lines. To improve the visual inspection, we make use of [redshifting](https://github.com/sdjohnson-astro/redshifting) code which performs a grid-search using eigenspectrum templates from [Bolton et al. (2012)](https://iopscience.iop.org/article/10.1088/0004-6256/144/5/144) to determine redshift from optical spectroscopy. This script open an interactive plots of the input spectra and then record the last redshift input by the user to a file, along with the object ID (redshift.txt). Object ID has to be specified when running the script, for example:
+We can determine the redshift by searching for a prominent emission or absorption lines. To improve the visual inspection, we make use of [redshifting](https://github.com/sdjohnson-astro/redshifting) code which performs a grid-search using eigenspectrum templates from [Bolton et al. (2012)](https://iopscience.iop.org/article/10.1088/0004-6256/144/5/144) to determine redshift from optical spectroscopy. The example of parameters obtained with redshifting are given in plot_redshifting and redshifting_redshift.fits. The following script open an interactive plots of the input spectra and then record the last redshift input by the user to a file, along with the object ID (redshift.txt). Object ID has to be specified when running the script, for example:
 
 ```
 python3 interactive_spec.py --id 42300690516701462
 ```
+After determining the redshift, [GELATO](https://github.com/TheSkyentist/GELATO) will be used to fit the spectra. An example of GELATO results are given in results_high_z_broad (for spectra with z > 1.2 and broad lines parameter), results_low_z_broad (for spectra with z < 1.2 and broad lines parameter), and results_low_z_narrow (for spectra with z < 1.2 and narrow lines parameter).
+
 
