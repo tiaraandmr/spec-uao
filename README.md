@@ -29,7 +29,7 @@ The environment will then be installed under the name spec-uao and can then be a
 conda activate spec-uao
 ```
 
-## Running the Scripts - Data Calibration
+## Running the Scripts for Data Calibration
 ### Spectral Cleaning
 The spectra is reduced with the Binospec pipeline described [here](https://bitbucket.org/chil_sai/binospec/wiki/Home). The 1D spectra is now split into individual fits file, one spectrum per file. They are distributed bundled up into tar files, whose contents are the 1D files with file names derived from object names submitted with the mask design. For the example here, obj_abs_1D.tar folder is the default folder used. The spectra from the pipeline still need further cleaning from the sky lines, bad data, and calibration artifact. This script produce new fits table with the cleaned spectrum for each file (clean_spec) and preliminary plots (plot_spec) for a quicklook. After the object ID is obtained, this script also cross-match them with the bigger object catalog "slits.fits", and then produced new catalog with only the object in the sample "slits_reduced.fits".
 
@@ -66,4 +66,5 @@ python3 interactive_spec.py --id 42300690516701462
 ```
 After determining the redshift, [GELATO](https://github.com/TheSkyentist/GELATO) will be used to fit the spectra. An example of GELATO results are given in results_high_z_broad (for spectra with z > 1.2 and broad lines parameter), results_low_z_broad (for spectra with z < 1.2 and broad lines parameter), and results_low_z_narrow (for spectra with z < 1.2 and narrow lines parameter).
 
+## Running the Scripts for Data Analysis
 
