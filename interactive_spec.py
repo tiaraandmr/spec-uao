@@ -45,20 +45,20 @@ species = np.array([['[SII]', 6716.435709204644], ['[SII]', 6730.811841618589], 
                     ['CIV', 1548.8576020874154], ['HeII', 1639.7908206670402], ['CIII]', 1908.1020362243723], ['MgII', 2798.2921038031536],
                     ['LyA', 1216], ['4000AB', 4000], ['Ca H', 3934], ['Ca K', 3969], ['Mg', 5175], ['Na', 5894]])
 
-# define the figure and font size
+# Define the figure and font size
 plt.rcParams.update({'font.size': 14})
 fig, ax = plt.subplots(figsize=(17, 5))
 fig.subplots_adjust(hspace=0, wspace=0, bottom=0.2)
 
+# Plot the spectrum after convolution
 ax.plot(new_wav, spec_convolve, color='firebrick', linewidth=2.0, drawstyle='steps-mid', label='Calibrated \& Smoothed (N=5)', alpha=0.7)
 
-#define x and y label and plot title
+# Define x and y label
 ax.set_xlabel(r'Observed Wavelength [$ \rm \AA$]', labelpad=10)
 ax.set_ylabel(r'Flux [$\mathrm{10^{-17}\ erg\ cm^{-2}\ s^{-1}\ \AA^{-1}}$]', labelpad=10)
 
-#setting the x- and y-axis limit
+# Setting the x- and y-axis limit
 ax.set_xlim(new_wav[good].min(), new_wav[good].max())
-#ax.set_xlim(9000,9200)
 ax.set_ylim(np.nanmin(spec_convolve), 1.7*np.nanmax(spec_convolve))
 
 # Plot lines
@@ -90,10 +90,10 @@ text_box.set_val('0.8')  # Trigger `submit` with the initial string.
 
 plt.show()
 
-#define path to redshift.txt
+# Define path to redshift.txt
 redshift = '/Users/saraswati/Documents/Work/spec-uao/redshift.txt/'
 
-#write results to redshift.txt
+# Write results to redshift.txt
 if os.path.exists('redshift.txt'):
     id = np.genfromtxt('redshift.txt', usecols=0, dtype='unicode')
     z_data = np.genfromtxt('redshift.txt', usecols=1, dtype='unicode')
