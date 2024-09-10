@@ -67,5 +67,9 @@ python3 interactive_spec.py --id 42300690516701462
 After determining the redshift, [GELATO](https://github.com/TheSkyentist/GELATO) will be used to fit the spectra. An example of GELATO results are given in results_high_z_broad (for spectra with z > 1.2 and broad lines parameter), results_low_z_broad (for spectra with z < 1.2 and broad lines parameter), and results_low_z_narrow (for spectra with z < 1.2 and narrow lines parameter).
 
 ### Line Measurements
+This script will get the parameters needed to create an AGN diagnostic diagram, which is [PBT](https://iopscience.iop.org/article/10.1086/130766) and [TBT](https://iopscience.iop.org/article/10.1088/0004-637X/742/1/46) diagram, from the fitting results. After line flux and dispersion were obtained, line ratio will be calculated and stored into a fits file (line_ratio_broad.fits).
 
+```
+python3 line_measurement.py
+```
 
