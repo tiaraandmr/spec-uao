@@ -37,11 +37,23 @@ The spectra is reduced with the Binospec pipeline described [here](https://bitbu
 python3 clean_spec.py
 ```
 
-It is advised to always check the path to the fits file written on the beginning of every scripts.
+It is advised to always check the path to the fits file written on the beginning of every scripts. If there are observation from two different nights for one objects, this script will also combined them with a weighted average. 
 
 ### Spectral Smoothing
-To make it easier to identify the lines, the clean spectra are smoothed to a specific degree. A preliminary redshift (z) values will be plotted together with the rest wavelength of the emission lines (smooth_spec). 
+To make it easier to identify the lines, the clean spectra are smoothed to a specific degree using [Spectres](https://github.com/ACCarnall/spectres?tab=readme-ov-file). A preliminary redshift (z) values will be plotted together with the rest wavelength of the emission lines (smooth_spec). 
 
 ```
 python3 smooth_spec.py
+```
+
+### Flux Calibration
+After the spectra is cleaned, the flux needs to be calibrated using a F-star or known spectrophotometric standard star. In this example, we use spectrophotometric standard star with observation date closest to each field. The spectra of the standard star needs to be resampled to match the wavelength range of the object spectra. This scripts will resample the standard star (input file is a .txt) then produce a fits file ready for calibration and a quicklook plot. All the results will be generated inside the calibration_star folder.
+
+```
+python3 flux_sampling.py
+```
+The next step is applying the calibration to all of the spectra. This scripts will apply the flux calibration and then save the results in the calibrated_spec folder as fits file. Aside from that, fits file for fitting purpose with [GELATO](https://github.com/TheSkyentist/GELATO) will also be generated.
+
+```
+python3 flux_calib_all.py
 ```
