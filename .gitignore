@@ -1,5 +1,7 @@
 # Don't keep track of data
 UAO-S118-23A
+GELATO
+redshifting
 #clean_spec
 #plot_spec
 #smooth_spec
@@ -9,3 +11,4 @@ UAO-S118-23A
 # Don't keep track of these files
 .ipynb_checkpoints
 *.DS_Store
+.key
