@@ -17,6 +17,7 @@ home = '/Users/saraswati/Documents/Work/spec-uao/'
 results_path = home+'results_low_z_broad/GELATO-results.fits'
 results = Table.read(results_path, 1)
 
+# Create pandas series for the line parameters
 ratio_1 = pd.Series([], dtype='float64')
 ratio_1_err = pd.Series([], dtype='float64')
 ratio_2 = pd.Series([], dtype='float64')
@@ -30,6 +31,7 @@ rest_color_val_gal = pd.Series([], dtype='float64')
 rest_color_err_gal = pd.Series([], dtype='float64')
 fval = pd.Series([], dtype='float64')
 snr_ne_v = pd.Series([], dtype='float64')
+mgII_disp = pd.Series([], dtype='float64')
 
 # Open rest frame color file
 rest_color_path = home+'SED-concat.fits'
@@ -54,6 +56,8 @@ for i in range(len(results)):
     h_alpha_err = results['Balmer_HI_6562.797027356974_Flux_err'][i]
     ne_v = results['Narrow_[NeV]_3345.828076914398_Flux'][i]
     ne_v_err = results['Narrow_[NeV]_3345.828076914398_Flux_err'][i]
+
+    mgII_disp[i] = float(results['Broad_MgII_Broad_2798.2921038031536_Dispersion'][i])
 
     snr_ne_v[i] = float(ne_v / ne_v_err)
 
@@ -98,15 +102,12 @@ for i in range(len(results)):
             ratio_3[i] = np.nan
             ratio_3_err[i] = np.nan
     
+    # Get object ID
     name_clean[i] = results['Name'][i].rsplit('.', 1)[0]
 
+    # Calculate rest frame color
     for m in range(len(rest_color_agn)):
         if int(rest_color_agn['ID'][m]) == int(name_clean[i]):
-            #if p_agn['Fval'][m] > 80:
-                #rc_z = rest_color_agn['rest_sdss_z'][m]
-                #err_rc_z = rest_color_agn['rest_sdss_z_err'][m]
-                #rc_g = rest_color_agn['rest_sdss_g'][m]
-                #err_rc_g = err_rc_z = rest_color_agn['rest_sdss_g_err'][m]
             rc_z = rest_color_agn['rest_sdss_z'][m]
             err_rc_z = rest_color_agn['rest_sdss_z_err'][m]
             rc_g = rest_color_agn['rest_sdss_g'][m]
@@ -114,18 +115,18 @@ for i in range(len(results)):
             rest_color_val_agn[i] = 2.5 * np.log10(rc_z/rc_g)
             rest_color_err_agn[i] = 2.5 * 0.434 * np.sqrt((err_rc_z/rc_z)+(err_rc_g/rc_g))
             fval[i] = p_agn['Fval'][m]   
-            #else:
+
             rc_z = rest_color_gal['rest_sdss_z'][m]
             err_rc_z = rest_color_gal['rest_sdss_z_err'][m]
             rc_g = rest_color_gal['rest_sdss_g'][m]
             err_rc_g = err_rc_z = rest_color_gal['rest_sdss_g_err'][m]
             rest_color_val_gal[i] = 2.5 * np.log10(rc_z/rc_g)
             rest_color_err_gal[i] = 2.5 * 0.434 * np.sqrt((err_rc_z/rc_z)+(err_rc_g/rc_g))
-                #fval[i] = p_agn['Fval'][m]
+
         else:
             pass
 
-#save value into a DataFrame
+# Save value into a DataFrame
 ratio = pd.DataFrame()
 ratio.insert(0, "ID", name_clean)
 ratio.insert(1, "Ne_III/O_II_Flux_Ratio", ratio_1)
@@ -138,11 +139,12 @@ ratio.insert(7, "Rest_SDSS_Color_AGN", rest_color_val_agn)
 ratio.insert(8, "Rest_SDSS_Color_Err_AGN", rest_color_err_agn)
 ratio.insert(9, "Rest_SDSS_Color_Gal", rest_color_val_gal)
 ratio.insert(10, "Rest_SDSS_Color_Err_Gal", rest_color_err_gal)
-ratio.insert(11, "SNR_Ne_V", snr_ne_v)
-ratio.insert(12, "P_AGN", fval)                                                                              
+ratio.insert(11, "Mg_II_Dispersion", mgII_disp)
+ratio.insert(12, "SNR_Ne_V", snr_ne_v)
+ratio.insert(13, "P_AGN", fval)                                                                              
 
-#convert DataFrame into Table
+# Convert DataFrame into Table
 ratio_tab = Table.from_pandas(ratio)
 
-#os.chdir(home+'results')
+# Write table into a fits file
 ratio_tab.write('line_ratio_broad.fits', overwrite=True)
