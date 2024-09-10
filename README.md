@@ -57,3 +57,11 @@ The next step is applying the calibration to all of the spectra. This scripts wi
 ```
 python3 flux_calib_all.py
 ```
+
+### Redshift Estimation
+We can determine the redshift by searching for a prominent emission or absorption lines. To improve the visual inspection, we make use of [redshifting](https://github.com/sdjohnson-astro/redshifting) code which performs a grid-search using eigenspectrum templates from [Bolton et al. (2012)](https://iopscience.iop.org/article/10.1088/0004-6256/144/5/144) to determine redshift from optical spectroscopy. This script open an interactive plots of the input spectra and then record the last redshift input by the user to a file, along with the object ID (redshift.txt). Object ID has to be specified when running the script, for example:
+
+```
+python3 interactive_spec.py --id 42300690516701462
+```
+
