@@ -84,3 +84,14 @@ The standard outputs are:
 - Single PBT and TBT diagram
 - 4-panel plots with 2 TBT diagram (1 with rest-frame color value determined based on AGN probability and 1 showing both colors from AGN and SF galaxy), 1 showing objects with Ne V detection with SNR > 3, and 1 PBT diagram for objects which has both H-alpha and H-beta detection. 
 All of the plots will be inside the analysis_plot folder.
+
+### Histograms
+Script to plot necessary histogram are also provided and can be run as follows:
+
+```
+python3 hist_plot.py
+```
+
+The standard outputs are:
+- Single histogram showing the fraction of spectra which have redshifts and no redshifts.
+- 3 panel-plots showing the distribution of spectra based on the redshifts and magnitudes.
