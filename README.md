@@ -73,3 +73,14 @@ This script will get the parameters needed to create an AGN diagnostic diagram, 
 python3 line_measurement.py
 ```
 
+### AGN Diagnostic Diagrams
+Script to plot AGN diagnostic diagram are provided and can be run as follows:
+
+```
+python3 tbt_plot.py
+```
+
+The standard outputs are:
+- Single PBT and TBT diagram
+- 4-panel plots with 2 TBT diagram (1 with rest-frame color value determined based on AGN probability and 1 showing both colors from AGN and SF galaxy), 1 showing objects with Ne V detection with SNR > 3, and 1 PBT diagram for objects which has both H-alpha and H-beta detection. 
+All of the plots will be inside the analysis_plot folder.
